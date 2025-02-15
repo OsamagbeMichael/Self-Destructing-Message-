@@ -37,7 +37,7 @@ app.post('/create-room', async (req, res) => {
 
     try {
         const chatroomId = uuidv4(); // get unique chatroom id 
-        const ttl = 1200; //Chatroom expires in 20 minutes(600 seconds)
+        const ttl = 1200; //Chatroom expires in 20 minutes(1200 seconds)
         //big hitter, waiting for our room to timeout
         await redisClient.setEx(`chatroom:${chatroomId}`, ttl, "active");
         // tl:dr : redisclient.setEx sets key with expiration time , 
@@ -132,8 +132,9 @@ app.get('/messages/:chatroomId', async (req, res) => {
         // so they self-destruct immediately after being read 
         //delete chatroom jey 
 
+
         await redisClient.del(...messageKeys);
-        await redisClient.del(messagelistKey);
+        await redisClient.del(messageListKey);
         await redisClient.del(chatroomKey);
 
 
@@ -142,6 +143,8 @@ app.get('/messages/:chatroomId', async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching messages:", error);
-        res.status(500).json({ error: "Failes to fetch messages" });
+        res.status(500).json({ error: "Failed to fetch messages" });
     }
 });
+
+
