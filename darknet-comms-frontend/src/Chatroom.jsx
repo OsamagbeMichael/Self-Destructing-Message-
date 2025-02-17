@@ -1,20 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
-
-
 /* */
 {/* */ }
-
 export default function Chatroom() {
-
     const [chatroomId, setChatroomId] = useState(""); /* Tracks selected chatroom*/
     const [message, setMessage] = useState(""); /* stores current message being typed*/
     const [messages, setMessages] = useState([]); /* maintains a list of messages */
     const [isLoading, setIsLoading] = useState(false) /*Manages loading state */
     // need to know whether a process is ongoing 
-
     const API_BASE = "http://localhost:3000"; // where API request are sent 
-
     //1.) Create a new chatroom
     const createChatroom = async () => {
         try {
@@ -26,7 +20,6 @@ export default function Chatroom() {
             console.error("Error creating chatroom", error);
         }
     };
-
     //2.) send message in chatroom 
     const sendMessage = async () => {
         if (!message.trim()) return;// check if the message is empty 
@@ -64,8 +57,6 @@ export default function Chatroom() {
             setIsLoading(false);
         }
     };
-
-
     return (
         <div className="chat-container">
             <h2> Darknet Comms</h2>
@@ -93,9 +84,6 @@ export default function Chatroom() {
                     </div>
 
                 )}
-
-
-
             {/*Display Messages */}
             {/*displays each message and renders them in a p tag */}
             {/* If there are no messages,it says no message left */}

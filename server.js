@@ -3,38 +3,29 @@ const express = require('express'); // creates express app
 const cors = require('cors');  // used to enable API to be accessed from different domains 
 const { v4: uuidv4 } = require('uuid'); // allows us create unique IDs 
 const redis = require('redis');
-
 //creates express app
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 //Middleware
 // allows request from different origins
 app.use(cors());
 app.use(express.json());
-
-
 // redis client 
 // handles redis client 
 const redisClient = redis.createClient({
     url: process.env.REDIS_URL || 'redis://localhost:6379'
 })
-
 redisClient.connect().then(() => console.log("Connected to Redis")).catch(err => console.error("Redis connection error:", err));
-
 //Basic route API route
 app.get('/', (req, res) => {
     res.send({ message: "Darknet comms API is running" });
 });
-
 //start server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
 // (1) create a route to generate chatroom ID , (2) store the chatroom in redis with an expiration time , (3) return chatroom ID to client 
 app.post('/create-room', async (req, res) => {
-
     try {
         const chatroomId = uuidv4(); // get unique chatroom id 
         const ttl = 1200; //Chatroom expires in 20 minutes(1200 seconds)
@@ -48,7 +39,6 @@ app.post('/create-room', async (req, res) => {
         res.status(500).json({ error: "Failed to create chatroom" });
     }
 });
-
 // endpoint to send a message to a chatroom. The endpoint expects a JSON body. 
 app.post('/send-message', async (req, res) => {
     try {
@@ -99,7 +89,6 @@ app.post('/send-message', async (req, res) => {
         res.status(500).json({ error: "Failed to send message" });
     }
 });
-
 //endpoint to read message and delete from storage
 app.get('/messages/:chatroomId', async (req, res) => {
     try {
@@ -111,7 +100,6 @@ app.get('/messages/:chatroomId', async (req, res) => {
         if (!chatroomStatus) {
             return res.status(404).json({ error: 'Chatroom not found or expired' });
         }
-
         //2.) retrieve list of message keys associated with this chatroom
         const messageListKey = `chatroom:${chatroomId}:messages`;
         const messageKeys = await redisClient.lRange(messageListKey, 0, -1);
@@ -124,20 +112,15 @@ app.get('/messages/:chatroomId', async (req, res) => {
         const messagesData = await Promise.all(
             messageKeys.map(key => redisClient.get(key))
         );
-
         // parse each message (which was stored as a JSON string)
         const messages = messagesData.map(data => JSON.parse(data));
 
         //4. Delete all message keys and the associated list from Redis
         // so they self-destruct immediately after being read 
-        //delete chatroom jey 
-
-
+        //delete chatroom key 
         await redisClient.del(...messageKeys);
         await redisClient.del(messageListKey);
         await redisClient.del(chatroomKey);
-
-
         // 5. Return the fetched messages to the client 
         res.json({ messages });
 
